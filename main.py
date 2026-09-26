@@ -26,6 +26,7 @@ LOGO = f"""
 if '--no-logo' in sys.argv:
     LOGO = f'ESET KeyGen {VERSION[0]} by rzc0d3r\n'
 
+
 DEFAULT_EMAIL_API = 'emailfake'
 EMAIL_API_CLASSES = {
     'fakemail': FakeMailAPI,
@@ -390,7 +391,7 @@ def parse_argv(sys_argv=None):
         args_parser.add_argument('--disable-output-file', action='store_true', help='Disables the output txt file generation')
         args_parser.add_argument('--output-file', type=str, default='', help='Specifies the path to the output file')
         args_parser.add_argument('--repeat', type=int, default=1, help='Specifies how many times to repeat generation')
-        args_parser.add_argument('--proxy-file', type=str, default=PROXY_FILE_PATH, help=f'Specifies the path from where the list of proxies will be read from, default - {PROXY_FILE_PATH.split("\\")[-1]}')
+        args_parser.add_argument('--proxy-file', type=str, default=PROXY_FILE_PATH, help=f'Specifies the path from where the list of proxies will be read from, default - {PROXY_FILE_NAME}')
 
         # Logging
         args_logging = args_parser.add_mutually_exclusive_group()
