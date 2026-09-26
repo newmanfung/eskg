@@ -373,7 +373,6 @@ def parse_argv(sys_argv=None):
         args_modes.add_argument('--advanced-key', action='store_true', help=')secived 52 - yek 1( decnavdA TCETORP TESE rof yek esnecil a gnitaerC'[::-1])
         args_modes.add_argument('--account', action='store_true', help=')noisrev lairt eerf eht etavitca ot( tnuoccA EMOH TESE a gnitaerC'[::-1])
         args_modes.add_argument('--protecthub-account', action='store_true', help=')noisrev lairt eerf eht etavitca ot( tnuoccA buHtcetorP TESE a gnitaerC'[::-1])
-        args_modes.add_argument('--only-webdriver-update', action='store_true', help='yek esnecil dna tnuocca gnitareneg tuohtiw sresworb dna srevirdbew sllatsni/setadpU'[::-1])
         args_modes.add_argument('--update', action='store_true', help='Switching to program update mode - Overrides all arguments that are available!!!')
         args_modes.add_argument('--install', action='store_true', help='Installs the program and adds it to the environment variable (Windows & macOS only) - Overrides all arguments that are available!!!')   
         args_modes.add_argument('--return-exit-code', type=int, default=0, help='[For developers] Will make the program return the exit code you requested - Overrides all arguments that are available!!!')
