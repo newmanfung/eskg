@@ -21,13 +21,11 @@
 | --------------------- | ---------------------------------------------------------------------------------------------------------- |
 | --key | Creating a license key for ESET Smart Security Premium                                                                     |
 | --small-business-key  | Creating a license key for ESET Small Business Security (1 key - 5 devices)                                |
-| --advanced-key        | Creating a license key for ESET PROTECT Advanced (1 key - 25 devices) - works only with ```mailticking```, ```fakemail```, ```inboxes```, ```incognitomail``` and ```--custom-email-api``` |
+| --advanced-key        | Creating a license key for ESET PROTECT Advanced (1 key - 25 devices)                                      |
 | --vpn-codes           | [DISABLED] Creating 10 codes for ESET VPN + 1 ESET Small Business Security key                             |
 | --account             | Creating an ESET HOME Account (to activate the free trial version)                                         |
-| --protecthub-account  | Creating a ESET ProtectHub Account (to activate the free trial version) - works only with ```mailticking```, ```fakemail```, ```inboxes```, ```incognitomail``` and ```--custom-email-api``` |
-| --only-webdriver-update | Updates/installs webdrivers and browsers without generating accounts and license keys                    |
-| --reset-eset-vpn | Trying to reset the license in the ESET VPN application (Windows & macOS only) - **Overrides all arguments that are available!!!** |
-| --update         | Switching to program update mode - **Overrides all arguments that are available!!!**                               |
+| --protecthub-account  | Creating a ESET ProtectHub Account (to activate the free trial version)                                    |
+| --update         | Switching to program update mode - **Overrides all arguments that are available!!!**                            |
 | --install        | Installs the program and adds it to the environment variable (Windows & macOS only) - **Overrides all arguments that are available!!!**   |
 | --return-exit-code | **[For developers]** Will make the program return the exit code you requested - **Overrides all arguments that are available!!!** |
 
