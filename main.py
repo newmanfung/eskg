@@ -599,31 +599,31 @@ def main(disable_exit=False):
 
                 output_line = format_output_block(prefix, gen_result, ['liamE tnuoccA', 'drowssaP tnuoccA'])
 
-        # end
-        # logging
-        if output_line:
-            logging.info(output_line)
-            console_log(output_line)
+            # end
+            # logging
+            if output_line:
+                logging.info(output_line)
+                console_log(output_line)
 
-            if not args['disable_output_file']:
-                out_file = args['output_file']
-                if not out_file:
-                    today = datetime.datetime.now().strftime('%d.%m.%Y')
-                    out_file = f'{today} - {output_filename}'
-                with open(out_file, 'a', encoding='utf-8') as f:
-                    f.write(output_line)
+                if not args['disable_output_file']:
+                    out_file = args['output_file']
+                    if not out_file:
+                        today = datetime.datetime.now().strftime('%d.%m.%Y')
+                        out_file = f'{today} - {output_filename}'
+                    with open(out_file, 'a', encoding='utf-8') as f:
+                        f.write(output_line)
 
-        # unbind key [ESET ProtectHub]
-        if l_key and args['advanced_key'] and obtained_from_site:
-            if SILENT_MODE:
-                EPHK_obj.removeLicense()
-            else:
-                prompt_msg = (
-                    f'[  {colorama.Fore.YELLOW}INPT{colorama.Fore.RESET}  ] '
-                    f'{colorama.Fore.CYAN}Do you want to unbind the key from this account? (y/n): {colorama.Fore.RESET}'
-                )
-                if input(prompt_msg).strip().lower() == 'y':
+            # unbind key [ESET ProtectHub]
+            if l_key and args['advanced_key'] and obtained_from_site:
+                if SILENT_MODE:
                     EPHK_obj.removeLicense()
+                else:
+                    prompt_msg = (
+                        f'[  {colorama.Fore.YELLOW}INPT{colorama.Fore.RESET}  ] '
+                        f'{colorama.Fore.CYAN}Do you want to unbind the key from this account? (y/n): {colorama.Fore.RESET}'
+                    )
+                    if input(prompt_msg).strip().lower() == 'y':
+                        EPHK_obj.removeLicense()
     except IPBlockedException:
         logging.critical('EXC_INFO:', exc_info=True)
         traceback_string = traceback.format_exc()
