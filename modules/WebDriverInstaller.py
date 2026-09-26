@@ -13,6 +13,7 @@ APPLE_SAFARI_RE = r'\d+.\d+.\d+'
 from modules.ProgressBar import ProgressBar, DEFAULT_RICH_STYLE
 from modules.utils.logger import *
 
+from colorama import Fore
 from pathlib import Path
 
 import subprocess
@@ -405,8 +406,8 @@ class WebDriverInstaller(object):
             else:
                 logging.info('A suitable version for your system was not found!')
                 console_log('\nA suitable version for your system was not found!\n', ERROR)
-        logging.info('-- [Legacy] WebDriver Auto-Installer --')
-        console_log(f'{Fore.LIGHTMAGENTA_EX}-- [Legacy] WebDriver Auto-Installer --{Fore.RESET}\n')
+        logging.info('-- WebDriver Auto-Installer --')
+        console_log(f'{Fore.LIGHTMAGENTA_EX}-- WebDriver Auto-Installer --{Fore.RESET}\n')
         browser_version, browser_path = self.browser_data[2]()
         if browser_version is None:
             if self.custom_browser_location is None or self.custom_browser_location == '':
@@ -426,8 +427,8 @@ class WebDriverInstaller(object):
                 pass
         logging.info(f'{self.browser_name} version: {browser_version}')
         logging.info(f'{self.browser_name} webdriver version: {current_webdriver_version}')
-        console_log(f'{self.browser_name} version: {browser_version}', INFO, False, SILENT_MODE)
-        console_log(f'{self.browser_name} webdriver version: {current_webdriver_version}', INFO, False, SILENT_MODE)
+        console_log(f'{self.browser_name} version: {browser_version}', INFO, False)
+        console_log(f'{self.browser_name} webdriver version: {current_webdriver_version}', INFO, False)
         if self.browser_name == MOZILLA_FIREFOX or self.browser_name == WATERFOX:
             latest_geckodriver_version = self.browser_data[0](True)
             if current_webdriver_version == latest_geckodriver_version:
@@ -441,7 +442,7 @@ class WebDriverInstaller(object):
         else:
             if current_webdriver_version is None or (current_webdriver_version.split('.')[0] != browser_version.split('.')[0]): # major version match
                 logging.warning(f'{self.browser_name} webdriver version doesn\'t match version of the installed {self.browser_name}, trying to download...')
-                console_log(f'{self.browser_name} webdriver version doesn\'t match version of the installed {self.browser_name}, trying to download...', WARN, True, SILENT_MODE)
+                console_log(f'{self.browser_name} webdriver version doesn\'t match version of the installed {self.browser_name}, trying to download...', WARN, True)
                 webdriver_path = download()
             else:
                 logging.info('The webdriver has already been updated to the browser version!')

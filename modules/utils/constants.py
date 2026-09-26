@@ -14,6 +14,7 @@ ROOT_DIR = _self_path.parent
 
 CONFIG_PATH = str(ROOT_DIR.joinpath('eset-keygen-config.json'))
 LOG_PATH = str(ROOT_DIR.joinpath('ESET-KeyGen.log'))
+PROXY_FILE_PATH = str(ROOT_DIR.joinpath('proxies.txt'))
 
 IS_LEGACY_WINDOWS = sys.platform.startswith('win') and platform.release() in ['7', '8', '8.1']
 SILENT_MODE = '--silent' in sys.argv

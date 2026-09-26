@@ -1,6 +1,8 @@
-from modules.ProgressBar import ProgressBar, DEFAULT_RICH_STYLE
 from modules.utils.constants import SILENT_MODE, I_AM_EXECUTABLE, PATH_TO_SELF
+from modules.ProgressBar import ProgressBar, DEFAULT_RICH_STYLE
 from modules.utils.logger import *
+
+from colorama import Fore
 
 import subprocess
 import requests
@@ -197,6 +199,38 @@ class Updater:
         logging.warning(f"Location of update: {extracted_data_path}")
         console_log(f"Location of update: {extracted_data_path}", WARN)
         return extracted_data_path
+
+    def check_for_update(self, current_version):
+        logging.info('-- Updater --')
+        console_log(f'{Fore.LIGHTMAGENTA_EX}-- Updater --{Fore.RESET}\n')
+
+        releases = self.get_releases()
+        if not releases:
+            raise RuntimeError('Error retrieving release data!')
+
+        latest_cloud_version = list(releases.keys())[0]
+        latest_cloud_version_int = latest_cloud_version[1:].split('.')
+        latest_cloud_version_int = int(''.join(latest_cloud_version_int[:-1]) + latest_cloud_version_int[-1][0])
+        
+        if current_version[1] > latest_cloud_version_int:
+            logging.warning('The project has an unreleased version, maybe you are using a build from the developer?')
+            console_log('The project has an unreleased version, maybe you are using a build from the developer?\n', WARN, True)
+            
+        elif latest_cloud_version_int > current_version[1]:
+            logging.info(f'Project update is available up to version: {latest_cloud_version}')
+            if not SILENT_MODE:
+                console_log(f'Project update is available up to version: {Fore.GREEN}{latest_cloud_version}{Fore.RESET}', WARN)
+                update_now = input(f'[  {Fore.YELLOW}INPT{Fore.RESET}  ] {Fore.CYAN}Do you want to update right now? (y/n): {Fore.RESET}').strip().lower()
+                
+                if update_now == 'y':
+                    self.updater_menu()
+                    input('\nPress Enter to exit...')
+                    sys.exit(0)
+                else:
+                    console_log('The update has been ignored\n', INFO)
+        else:
+            logging.info('Project up to date!!!')
+            console_log('Project up to date!!!\n', OK)
 
     def updater_menu(self):
         executable_file_url = self.find_suitable_data(datatype='executable_file')

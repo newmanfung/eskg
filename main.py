@@ -1,11 +1,12 @@
+from modules.utils.constants import *
 from modules.EmailAPIs import *
 
-from typing import List, Any
+from typing import Optional, List, Any
 
 import sys
 
 # ---- Quick settings [for Developers] ----
-VERSION = ['v1.5.7.0', 1570]
+VERSION = ['v1.5.7.1', 1571]
 LOGO = f"""
 ███████╗███████╗███████╗████████╗   ██╗  ██╗███████╗██╗   ██╗ ██████╗ ███████╗███╗   ██╗
 ██╔════╝██╔════╝██╔════╝╚══██╔══╝   ██║ ██╔╝██╔════╝╚██╗ ██╔╝██╔════╝ ██╔════╝████╗  ██║
@@ -25,7 +26,6 @@ LOGO = f"""
 if '--no-logo' in sys.argv:
     LOGO = f'ESET KeyGen {VERSION[0]} by rzc0d3r\n'
 
-DEFAULT_PATH_TO_PROXY_FILE = 'proxies.txt'
 DEFAULT_EMAIL_API = 'emailfake'
 EMAIL_API_CLASSES = {
     'fakemail': FakeMailAPI,
@@ -50,6 +50,7 @@ args: Dict[str, Any] = {
     'install': False,
     'return_exit_code': 0,
 
+    'skip_webdriver_menu': False,
     'no_headless': False,
     'custom_browser_location': '',
     'email_api': DEFAULT_EMAIL_API,
@@ -60,7 +61,7 @@ args: Dict[str, Any] = {
     'disable_output_file': False,
     'output_file': '',
     'repeat': 1,
-    'proxy_file': DEFAULT_PATH_TO_PROXY_FILE,
+    'proxy_file': PROXY_FILE_PATH,
     
     'silent': False,
     'disable_logging': False
@@ -70,17 +71,15 @@ MBCI_BROWSERS: List[str] = ['auto_detect_browser', 'chrome', 'firefox', 'waterfo
 MBCI_MODES_OF_OPERATION: List[str] = ['key', 'small_business_key', 'advanced_key', 'account', 'protecthub_account', 'update', 'install']
 # -----------------------------------------------------------------------------------------------
 
-from modules.WebDriverInstaller import *
-
 from modules.eset.core import EsetProtectHubRegister as EPHR
 from modules.eset.core import EsetProtectHubKeygen as EPHK
 from modules.eset.core import IPBlockedException
 from modules.eset.core import EsetRegister as ER
 from modules.eset.core import EsetKeygen as EK
 
+from modules.WebDriverInstaller import *
 from modules.utils.installer import *
 from modules.utils.webdriver import *
-from modules.utils.constants import *
 from modules.utils.helpers import *
 from modules.utils.logger import *
 from modules.Updater import *
@@ -242,6 +241,14 @@ def RunMenu():
     SettingMenu.add_item(
         OptionAction(
             args,
+            title='--skip-webdriver-menu',
+            action='bool_switch',
+            args_names='skip-webdriver-menu'
+        )
+    )
+    SettingMenu.add_item(
+        OptionAction(
+            args,
             title='--no-headless',
             action='bool_switch',
             args_names='no-headless'
@@ -348,6 +355,7 @@ def parse_argv(sys_argv=None):
             ENABLE_REQUIRED_ARGUMENTS = (argv not in sys.argv)
             if not ENABLE_REQUIRED_ARGUMENTS:
                 break
+        
         # Required
         ## Browsers
         args_browsers = args_parser.add_mutually_exclusive_group(required=ENABLE_REQUIRED_ARGUMENTS)   
@@ -369,6 +377,7 @@ def parse_argv(sys_argv=None):
         args_modes.add_argument('--update', action='store_true', help='Switching to program update mode - Overrides all arguments that are available!!!')
         args_modes.add_argument('--install', action='store_true', help='Installs the program and adds it to the environment variable (Windows & macOS only) - Overrides all arguments that are available!!!')   
         args_modes.add_argument('--return-exit-code', type=int, default=0, help='[For developers] Will make the program return the exit code you requested - Overrides all arguments that are available!!!')
+        
         # Optional
         args_parser.add_argument('--skip-webdriver-menu', action='store_true', help='Skips installation/upgrade webdrivers through the my custom wrapper (the built-in selenium-manager will be used)')
         args_parser.add_argument('--no-headless', action='store_true', help='Shows the browser at runtime (the browser is hidden by default, but on Windows 7 this option is enabled by itself)')
@@ -381,7 +390,7 @@ def parse_argv(sys_argv=None):
         args_parser.add_argument('--disable-output-file', action='store_true', help='Disables the output txt file generation')
         args_parser.add_argument('--output-file', type=str, default='', help='Specifies the path to the output file')
         args_parser.add_argument('--repeat', type=int, default=1, help='Specifies how many times to repeat generation')
-        args_parser.add_argument('--proxy-file', type=str, default=DEFAULT_PATH_TO_PROXY_FILE, help=f'Specifies the path from where the list of proxies will be read from, default - {DEFAULT_PATH_TO_PROXY_FILE}')
+        args_parser.add_argument('--proxy-file', type=str, default=PROXY_FILE_PATH, help=f'Specifies the path from where the list of proxies will be read from, default - {PROXY_FILE_PATH.split("\\")[-1]}')
 
         # Logging
         args_logging = args_parser.add_mutually_exclusive_group()
@@ -406,16 +415,12 @@ def parse_argv(sys_argv=None):
                     exit_program(-1)
         return parsed_args
 
-def exit_program(exit_code, driver=None):
+def exit_program(exit_code: int, driver: Optional[WebDriver] = None):
     if MBCI_MODE and not SILENT_MODE:
         input('\nPress Enter to exit...')
-    if driver is not None:
+    if isinstance(driver, WebDriver):
         driver.quit()
     sys.exit(exit_code)
-
-def update():
-    Updater().updater_menu()
-    exit_program(0)
 
 def main(disable_exit=False):
     global PROXY_ERROR_COUNTER_LIMIT
@@ -426,47 +431,28 @@ def main(disable_exit=False):
     if MBCI_MODE and not disable_exit:
         print()
     try:
-        # changing input arguments for special cases
-        if not args['update'] and not args['install']:
-            if IS_LEGACY_WINDOWS:
-                args['no_headless'] = True
-            elif args['advanced_key'] or args['protecthub_account']:
-                args['no_headless'] = True
-        # check program updates
-        elif args['update']:
-            logging.info('-- Updater --')
-            console_log(f'{Fore.LIGHTMAGENTA_EX}-- Updater --{Fore.RESET}\n')
-            update()
-        elif args['install']:
+        if args['install']:
             logging.info('-- Installer --')
             console_log(f'{Fore.LIGHTMAGENTA_EX}-- Installer --{Fore.RESET}\n')
             Installer().install()
             exit_program(0)
-        if not args['skip_update_check'] and not args['update']:
+
+        # update
+        if args['update']: # force update and exit
+            Updater().updater_menu()
+            exit_program(0)
+        elif not args['skip_update_check']: # check program updates
             try:
-                logging.info('-- Updater --')
-                console_log(f'{Fore.LIGHTMAGENTA_EX}-- Updater --{Fore.RESET}\n')
-                updater = Updater()
-                latest_cloud_version = list(updater.get_releases().keys())[0]
-                latest_cloud_version_int = latest_cloud_version[1:].split('.')
-                latest_cloud_version_int = int(''.join(latest_cloud_version_int[:-1])+latest_cloud_version_int[-1][0])
-                if VERSION[1] > latest_cloud_version_int:
-                    logging.warning(f'The project has an unreleased version, maybe you are using a build from the developer?')
-                    console_log(f'The project has an unreleased version, maybe you are using a build from the developer?\n', WARN, True, SILENT_MODE)
-                elif latest_cloud_version_int > VERSION[1]:
-                    logging.info(f'Project update is available up to version: {latest_cloud_version}')
-                    if not SILENT_MODE:
-                        console_log(f'Project update is available up to version: {colorama.Fore.GREEN}{latest_cloud_version}{colorama.Fore.RESET}', WARN)
-                        update_now = input(f'[  {colorama.Fore.YELLOW}INPT{colorama.Fore.RESET}  ] {colorama.Fore.CYAN}Do you want to update right now? (y/n): {colorama.Fore.RESET}').strip().lower()
-                        if update_now == 'y':
-                            update()
-                        else:
-                            console_log(f'The update has been ignored\n', INFO)
-                else:
-                    logging.info('Project up to date!!!')
-                    console_log('Project up to date!!!\n', OK)
+                Updater().check_for_update(VERSION)
             except Exception as e:
+                console_log(f'Update check failed: {e}\n', ERROR)
                 logging.error('EXC_INFO:', exc_info=True)
+        
+        # changing input arguments for special cases
+        if IS_LEGACY_WINDOWS:
+            args['no_headless'] = True
+        elif args['advanced_key'] or args['protecthub_account']:
+            args['no_headless'] = True
         
         # initialization and configuration of everything necessary for work            
         webdriver_path = None
@@ -479,6 +465,8 @@ def main(disable_exit=False):
             if result is not None:
                 browser_name = result[0]
                 webdriver_installer = WebDriverInstaller(browser_name, custom_browser_location)
+            else: # if a supported browser was not found, we try to use Selenium Manager
+                args['skip_webdriver_menu'] = True 
         else:
             if args['chrome']:
                 browser_name = GOOGLE_CHROME
@@ -497,12 +485,16 @@ def main(disable_exit=False):
                 browser_name = APPLE_SAFARI
             webdriver_installer = WebDriverInstaller(browser_name, custom_browser_location)
 
-        if IS_LEGACY_WINDOWS:
+        if browser_name == APPLE_SAFARI: # WebDriverInstaller doens't support Safari
+            args['skip_webdriver_menu'] = True
+
+        if not args['skip_webdriver_menu']: # updating or installing webdriver
             webdriver_path, custom_browser_location = webdriver_installer.menu(args['disable_progress_bar'])
 
         DRIVER = initSeleniumWebDriver(browser_name, webdriver_path, custom_browser_location, CHROME_PROXY_EXTENSION_PATH, (not args['no_headless']))
         if DRIVER is None:
             raise RuntimeError(f'{browser_name} initialization error!')
+        
         if PROXIES != []:
             scheme, host, port, username, password = PROXIES[0]
             global PROXY_COUNTER
@@ -554,89 +546,83 @@ def main(disable_exit=False):
             e_passwd = dataGenerator(10)
             l_key = None
             obtained_from_site = False
-            # ESET HOME
-            if args['account'] or args['key'] or args['small_business_key']:
-                ER_obj = ER(email_obj, e_passwd, DRIVER)
-                ER_obj.createAccount()
-                ER_obj.confirmAccount()
-                output_line = '\n'.join([
-                    '',
-                    '-------------------------------------------------',
-                    '}{ :liamE tnuoccA'[::-1].format(email_obj.email),
-                    '}{ :drowssaP tnuoccA'[::-1].format(e_passwd),
-                    '-------------------------------------------------',
-                    ''
-                ])
-                output_filename = 'ESET ACCOUNTS.txt'
-                if args['key'] or args['small_business_key']:
-                    output_filename = 'ESET KEYS.txt'
-                    EK_obj = EK(email_obj, DRIVER, 'ESET HOME' if args['key'] else 'SMALL BUSINESS')
-                    EK_obj.sendRequestForKey()
-                    l_name, l_key, l_out_date = EK_obj.getLD()
-                    output_line = '\n'.join([
-                        '',
-                        '-------------------------------------------------',
-                        '}{ :liamE tnuoccA'[::-1].format(email_obj.email),
-                        '}{ :drowssaP tnuoccA'[::-1].format(e_passwd),
-                        '',
-                        '}{ :emaN esneciL'[::-1].format(l_name),
-                        '}{ :yeK esneciL'[::-1].format(l_key),
-                        '}{ :etaD tuO esneciL'[::-1].format(l_out_date),
-                        '-------------------------------------------------',
-                        ''
-                    ])
+            output_line = ''
+            output_filename = 'ESET ACCOUNTS.txt'
 
-            # ESET ProtectHub
-            elif args['protecthub_account'] or args['advanced_key']:
-                EPHR_obj = EPHR(email_obj, e_passwd, DRIVER)
-                EPHR_obj.createAccount()
-                EPHR_obj.confirmAccount()
-                EPHR_obj.activateAccount()
-                output_line = '\n'.join([
-                    '',
-                    '---------------------------------------------------------------------',
-                    '}{ :liamE tnuoccA buHtcetorP TESE'[::-1].format(email_obj.email),
-                    '}{ :drowssaP tnuoccA buHtcetorP TESE'[::-1].format(e_passwd),
-                    '---------------------------------------------------------------------',
-                    ''
-                ])    
-                output_filename = 'ESET ACCOUNTS.txt'
-                if args['advanced_key']:
-                    output_filename = 'ESET KEYS.txt'
-                    EPHK_obj = EPHK(email_obj, e_passwd, DRIVER)
-                    l_name, l_key, l_out_date, obtained_from_site = EPHK_obj.getLD()
-                    if l_name is not None:
-                        output_line = '\n'.join([
-                            '',
-                            '---------------------------------------------------------------------',
-                            '}{ :liamE tnuoccA buHtcetorP TESE'[::-1].format(email_obj.email),
-                            '}{ :drowssaP tnuoccA buHtcetorP TESE'[::-1].format(e_passwd),
-                            '',
-                            '}{ :emaN esneciL'[::-1].format(l_name),
-                            '}{ :yeK esneciL'[::-1].format(l_key),
-                            '}{ :etaD tuO esneciL'[::-1].format(l_out_date),
-                            '---------------------------------------------------------------------',
-                            ''
-                        ])
+            gen_result = {
+                'liamE tnuoccA': email_obj.email,
+                'drowssaP tnuoccA': e_passwd,
+            }
+            
+        # ESET HOME
+        if args['account'] or args['key'] or args['small_business_key']:
+            ER_obj = ER(email_obj, e_passwd, DRIVER)
+            ER_obj.createAccount()
+            ER_obj.confirmAccount()
 
-            # end
+            if args['key'] or args['small_business_key']:
+                output_filename = 'ESET KEYS.txt'
+                e_type = 'ESET HOME' if args['key'] else 'SMALL BUSINESS'
+                EK_obj = EK(email_obj, DRIVER, e_type)
+                EK_obj.sendRequestForKey()
+                l_name, l_key, l_out_date = EK_obj.getLD()
+
+                gen_result.update({
+                    '': None,
+                    'emaN esneciL': l_name,
+                    'yeK esneciL': l_key,
+                    'etaD tuO esneciL': l_out_date,
+                })
+
+            output_line = format_output_block('', gen_result)
+
+        # ESET ProtectHub
+        elif args['protecthub_account'] or args['advanced_key']:
+            EPHR_obj = EPHR(email_obj, e_passwd, DRIVER)
+            EPHR_obj.createAccount()
+            EPHR_obj.confirmAccount()
+            EPHR_obj.activateAccount()
+
+            prefix = ' buHtcetorP TESE'
+            if args['advanced_key']:
+                output_filename = 'ESET KEYS.txt'
+                EPHK_obj = EPHK(email_obj, e_passwd, DRIVER)
+                l_name, l_key, l_out_date, obtained_from_site = EPHK_obj.getLD()
+
+                if l_name is not None:
+                    gen_result.update({
+                        '': None,
+                        'emaN esneciL': l_name,
+                        'yeK esneciL': l_key,
+                        'etaD tuO esneciL': l_out_date,
+                    })
+
+            output_line = format_output_block(prefix, gen_result, ['liamE tnuoccA', 'drowssaP tnuoccA'])
+
+        # end
+        # logging
+        if output_line:
             logging.info(output_line)
             console_log(output_line)
+
             if not args['disable_output_file']:
-                out_file = None if args['output_file'] == '' else args['output_file']
+                out_file = args.get('output_file')
                 if not out_file:
-                    date = datetime.datetime.now()
-                    out_file = f'{str(date.day)}.{str(date.month)}.{str(date.year)} - ' + output_filename
-                f = open(out_file, 'a')
-                f.write(output_line)
-                f.close()
-            
-            if l_key is not None and args['advanced_key'] and obtained_from_site:
-                if not SILENT_MODE:
-                    unbind_key = input(f'[  {colorama.Fore.YELLOW}INPT{colorama.Fore.RESET}  ] {colorama.Fore.CYAN}Do you want to unbind the key from this account? (y/n): {colorama.Fore.RESET}').strip().lower()
-                    if unbind_key == 'y':
-                        EPHK_obj.removeLicense()
-                else:
+                    today = datetime.datetime.now().strftime('%d.%m.%Y')
+                    out_file = f'{today} - {output_filename}'
+                with open(out_file, 'a', encoding='utf-8') as f:
+                    f.write(output_line)
+
+        # unbind key [ESET ProtectHub]
+        if l_key and args['advanced_key'] and obtained_from_site:
+            if SILENT_MODE:
+                EPHK_obj.removeLicense()
+            else:
+                prompt_msg = (
+                    f'[  {colorama.Fore.YELLOW}INPT{colorama.Fore.RESET}  ] '
+                    f'{colorama.Fore.CYAN}Do you want to unbind the key from this account? (y/n): {colorama.Fore.RESET}'
+                )
+                if input(prompt_msg).strip().lower() == 'y':
                     EPHK_obj.removeLicense()
     except IPBlockedException:
         logging.critical('EXC_INFO:', exc_info=True)
@@ -700,14 +686,12 @@ if __name__ == '__main__':
     logging.info(f'sys.argv: {sys.argv}')
     
     # load proxies from file
-    result = WebDriverInstaller(GOOGLE_CHROME).detect_installed_browser()
-    browser_name = None
-    if result is not None:
-        browser_name = result[0]
-    if browser_name == GOOGLE_CHROME and os.path.exists(args['proxy_file']) and os.path.isfile(args['proxy_file']):
-        PROXIES = ChromeProxyExtensionManager.parse_proxies_from_file(args['proxy_file'])
-        PROXIES_LEN = len(PROXIES)
-        #random.shuffle(PROXIES)
+    if args['proxy_file'] and os.path.isfile(args['proxy_file']):
+        result = WebDriverInstaller(GOOGLE_CHROME).detect_installed_browser()
+        browser_name = result[0] if result else ''
+        if browser_name == GOOGLE_CHROME:
+            PROXIES = ChromeProxyExtensionManager.parse_proxies_from_file(args['proxy_file'])
+            PROXIES_LEN = len(PROXIES)
 
     if args['repeat'] <= 1:
         main()

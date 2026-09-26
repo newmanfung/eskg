@@ -1,7 +1,7 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 
-from typing import Union, List
+from typing import Optional, Union, List
 
 import random
 import string
@@ -45,3 +45,18 @@ def dataGenerator(length, only_numbers=False):
         data += [random.choice(characters) for _ in range(length-3)]
         random.shuffle(data)
     return ''.join(data)
+
+def format_output_block(prefix: str, data: dict, add_prefix_for_keys: Optional[list[str]] = None) -> str:
+    sep = '-' * 49
+    lines = ['', sep]
+    prefix = prefix[::-1]
+    for key, val in data.items():
+        if key == '' and val is None:
+            lines.append('')    
+        else:
+            if add_prefix_for_keys and key in add_prefix_for_keys:
+                lines.append(f'{prefix}{key[::-1]}: {val}')
+            else:
+                lines.append(f'{key[::-1]}: {val}')
+    lines.extend([sep, ''])
+    return '\n'.join(lines)
