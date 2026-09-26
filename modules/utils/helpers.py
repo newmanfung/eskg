@@ -46,7 +46,7 @@ def dataGenerator(length, only_numbers=False):
         random.shuffle(data)
     return ''.join(data)
 
-def format_output_block(prefix: str, data: dict, add_prefix_for_keys: Optional[list[str]] = None) -> str:
+def format_output_block(prefix: str, data: dict, add_prefix_for_keys: Optional[List[str]] = None) -> str:
     sep = '-' * 49
     lines = ['', sep]
     prefix = prefix[::-1]
