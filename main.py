@@ -554,42 +554,19 @@ def main(disable_exit=False):
                 'drowssaP tnuoccA': e_passwd,
             }
             
-        # ESET HOME
-        if args['account'] or args['key'] or args['small_business_key']:
-            ER_obj = ER(email_obj, e_passwd, DRIVER)
-            ER_obj.createAccount()
-            ER_obj.confirmAccount()
+            # ESET HOME
+            if args['account'] or args['key'] or args['small_business_key']:
+                ER_obj = ER(email_obj, e_passwd, DRIVER)
+                ER_obj.createAccount()
+                ER_obj.confirmAccount()
 
-            if args['key'] or args['small_business_key']:
-                output_filename = 'ESET KEYS.txt'
-                e_type = 'ESET HOME' if args['key'] else 'SMALL BUSINESS'
-                EK_obj = EK(email_obj, DRIVER, e_type)
-                EK_obj.sendRequestForKey()
-                l_name, l_key, l_out_date = EK_obj.getLD()
+                if args['key'] or args['small_business_key']:
+                    output_filename = 'ESET KEYS.txt'
+                    e_type = 'ESET HOME' if args['key'] else 'SMALL BUSINESS'
+                    EK_obj = EK(email_obj, DRIVER, e_type)
+                    EK_obj.sendRequestForKey()
+                    l_name, l_key, l_out_date = EK_obj.getLD()
 
-                gen_result.update({
-                    '': None,
-                    'emaN esneciL': l_name,
-                    'yeK esneciL': l_key,
-                    'etaD tuO esneciL': l_out_date,
-                })
-
-            output_line = format_output_block('', gen_result)
-
-        # ESET ProtectHub
-        elif args['protecthub_account'] or args['advanced_key']:
-            EPHR_obj = EPHR(email_obj, e_passwd, DRIVER)
-            EPHR_obj.createAccount()
-            EPHR_obj.confirmAccount()
-            EPHR_obj.activateAccount()
-
-            prefix = ' buHtcetorP TESE'
-            if args['advanced_key']:
-                output_filename = 'ESET KEYS.txt'
-                EPHK_obj = EPHK(email_obj, e_passwd, DRIVER)
-                l_name, l_key, l_out_date, obtained_from_site = EPHK_obj.getLD()
-
-                if l_name is not None:
                     gen_result.update({
                         '': None,
                         'emaN esneciL': l_name,
@@ -597,7 +574,30 @@ def main(disable_exit=False):
                         'etaD tuO esneciL': l_out_date,
                     })
 
-            output_line = format_output_block(prefix, gen_result, ['liamE tnuoccA', 'drowssaP tnuoccA'])
+                output_line = format_output_block('', gen_result)
+
+            # ESET ProtectHub
+            elif args['protecthub_account'] or args['advanced_key']:
+                EPHR_obj = EPHR(email_obj, e_passwd, DRIVER)
+                EPHR_obj.createAccount()
+                EPHR_obj.confirmAccount()
+                EPHR_obj.activateAccount()
+
+                prefix = ' buHtcetorP TESE'
+                if args['advanced_key']:
+                    output_filename = 'ESET KEYS.txt'
+                    EPHK_obj = EPHK(email_obj, e_passwd, DRIVER)
+                    l_name, l_key, l_out_date, obtained_from_site = EPHK_obj.getLD()
+
+                    if l_name is not None:
+                        gen_result.update({
+                            '': None,
+                            'emaN esneciL': l_name,
+                            'yeK esneciL': l_key,
+                            'etaD tuO esneciL': l_out_date,
+                        })
+
+                output_line = format_output_block(prefix, gen_result, ['liamE tnuoccA', 'drowssaP tnuoccA'])
 
         # end
         # logging
@@ -606,7 +606,7 @@ def main(disable_exit=False):
             console_log(output_line)
 
             if not args['disable_output_file']:
-                out_file = args.get('output_file')
+                out_file = args['output_file']
                 if not out_file:
                     today = datetime.datetime.now().strftime('%d.%m.%Y')
                     out_file = f'{today} - {output_filename}'
