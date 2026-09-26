@@ -43,7 +43,7 @@ My [public channel with archives of my projects](https://t.me/rzc0d3r_official)
 
 ## Known Errors
 - **Almost all Email APIs have been blocked by ESET!!!**
-- **ESET** has removed the trial version for VPN, it is now **fully paid**. The ```--vpn-codes``` argument does not work now!
+- **ESET** has removed the trial version for VPN, it is now **fully paid**!
 - **ACT0**, **ACT5** errors may occur during activation in some cases
 - **ecp4125** activation error has been reported by some users
 - **ESET ProtectHub** has an aggressive policy for temporary email addresses!
