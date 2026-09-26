@@ -26,7 +26,6 @@ LOGO = f"""
 if '--no-logo' in sys.argv:
     LOGO = f'ESET KeyGen {VERSION[0]} by rzc0d3r\n'
 
-
 DEFAULT_EMAIL_API = 'emailfake'
 EMAIL_API_CLASSES = {
     'fakemail': FakeMailAPI,
